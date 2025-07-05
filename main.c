@@ -4,6 +4,9 @@
 #include <string.h>
 #include <errno.h>
 
+#define SV_IMPLEMENTATION
+#include "./sv.h"
+
 char* loadFileContent(const char* filePath) {
 
 	FILE* fptr;
@@ -59,8 +62,12 @@ int main(int argc, char* argv[]) {
 
 	char* fileData = loadFileContent(filePath);
 
-	printf("%s\n", fileData);
-
+	String_View fileContent = { .count = strlen(fileData), .data = fileData };
+	while(fileContent.count > 0) {
+		String_View token = sv_chop_by_delim(&fileContent, ' ');
+		
+	   printf(SV_Fmt"\n", SV_Arg(token));
+	}
 	free(fileData);
 	return 0;
 }
