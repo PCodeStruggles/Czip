@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
 	const char* outFilePath = "output.txt";
 	FILE* outfptr;
 	if((outfptr = fopen(outFilePath, "w")) == NULL) {
-		printf("ERROR: %d %s - %s\n", errno, filePath, strerror(errno));
+		printf("ERROR: %d %s - %s\n", errno, outFilePath, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
 
