@@ -61,13 +61,24 @@ int main(int argc, char* argv[]) {
 	const char* filePath = argv[1];
 
 	char* fileData = loadFileContent(filePath);
+	
+	const char* outFilePath = "output.txt";
+	FILE* outfptr;
+	if((outfptr = fopen(outFilePath, "w")) == NULL) {
+		printf("ERROR: %d %s - %s\n", errno, filePath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
 
 	String_View fileContent = { .count = strlen(fileData), .data = fileData };
+	int i = 0;
 	while(fileContent.count > 0) {
-		String_View token = sv_chop_by_delim(&fileContent, ' ');
-		
-	   printf(SV_Fmt"\n", SV_Arg(token));
+		String_View svToken = sv_chop_by_delim(&fileContent, ' ');
+		if(fprintf(outfptr, SV_Fmt"\n", SV_Arg(svToken)) == -1){
+			printf("ERROR: %d %s - %s\n", errno, filePath, strerror(errno));
+			exit(EXIT_FAILURE);
+		}
 	}
+	fclose(outfptr);
 	free(fileData);
 	return 0;
 }
