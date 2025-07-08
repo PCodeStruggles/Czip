@@ -7,6 +7,13 @@
 #define SV_IMPLEMENTATION
 #include "./sv.h"
 
+typedef struct {
+	int tokenId;
+	int tokenFreq;
+	size_t tokenCount;
+	char* tokenData;
+} Token;
+
 char* loadFileContent(const char* filePath) {
 
 	FILE* fptr;
@@ -70,13 +77,22 @@ int main(int argc, char* argv[]) {
 	}
 
 	String_View fileContent = { .count = strlen(fileData), .data = fileData };
-	int i = 0;
+	int idCount = 0;
 	while(fileContent.count > 0) {
 		String_View svToken = sv_chop_by_delim(&fileContent, ' ');
-		if(fprintf(outfptr, SV_Fmt"\n", SV_Arg(svToken)) == -1){
+		Token token = {
+			.tokenId = idCount,
+			.tokenFreq = 0,
+			.tokenCount = svToken.count,
+			.tokenData = malloc(svToken.count)
+		};
+		memcpy(token.tokenData, svToken.data, svToken.count);
+		if((fprintf(outfptr, "TOKEN: %s\n\tTOKEN ID: %d - TOKEN FREQ: %d - TOKEN COUNT: %zu\n",
+				token.tokenData, token.tokenId, token.tokenFreq, token.tokenCount)) == -1) {
 			printf("ERROR: %d %s - %s\n", errno, filePath, strerror(errno));
 			exit(EXIT_FAILURE);
 		}
+		idCount++;
 	}
 	fclose(outfptr);
 	free(fileData);
