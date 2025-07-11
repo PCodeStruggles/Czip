@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <assert.h>
 
 #define SV_IMPLEMENTATION
 #include "./sv.h"
@@ -107,6 +108,7 @@ int main(int argc, char* argv[]) {
 		if(i != -1){
 			tokens.array[i].tokenFreq++;
 			} else {
+			assert(tokens.count < TOKEN_CAP && "Tokens array overflow");
 			Token token = {
 				.tokenId = tokenID,
 				.tokenFreq = 1,
