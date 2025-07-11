@@ -120,28 +120,29 @@ int main(int argc, char* argv[]) {
 			tokenID++;
 			}
 		}
-		free(fileData);
 
-		//Tokens sorting in Freq decreasing order
-		//Bubble Sort for now
-		for(size_t i = 0; i < tokens.count; i++) {
-			for(size_t j = 0; j < tokens.count -1 -i; j++) {
-				if(tokens.array[j].tokenFreq < tokens.array[j + 1].tokenFreq) {
-					const Token tmp = tokens.array[j];
-					tokens.array[j] = tokens.array[j + 1];
-					tokens.array[j + 1] = tmp;
-				}
+	free(fileData);
+
+	//Tokens sorting in Freq decreasing order
+	//Bubble Sort for now
+	for(size_t i = 0; i < tokens.count; i++) {
+		for(size_t j = 0; j < tokens.count -1 -i; j++) {
+			if(tokens.array[j].tokenFreq < tokens.array[j + 1].tokenFreq) {
+				const Token tmp = tokens.array[j];
+				tokens.array[j] = tokens.array[j + 1];
+				tokens.array[j + 1] = tmp;
 			}
 		}
-	
-		//Generate output file
-		for(size_t i = 0; i < tokens.count; i++) {
-			fprintf(outfptr, "TOKEN: '%s'\n\tID: %d FREQ: %d COUNT: %zu\n", 
-					tokens.array[i].tokenData, 
-					tokens.array[i].tokenId, 
-					tokens.array[i].tokenFreq, 
-					tokens.array[i].tokenCount);
-		}
+	}
+
+	//Generate output file
+	for(size_t i = 0; i < tokens.count; i++) {
+		fprintf(outfptr, "TOKEN: '%s'\n\tID: %d FREQ: %d COUNT: %zu\n", 
+				tokens.array[i].tokenData, 
+				tokens.array[i].tokenId, 
+				tokens.array[i].tokenFreq, 
+				tokens.array[i].tokenCount);
+	}
 
 	fclose(outfptr);
 	return 0;
