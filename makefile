@@ -6,3 +6,4 @@ main: main.c
 
 clean:
 	rm main
+	rm output.txt

@@ -6,6 +6,7 @@
 
 #define SV_IMPLEMENTATION
 #include "./sv.h"
+#define TOKEN_CAP 1024
 
 typedef struct {
 	int tokenId;
@@ -13,6 +14,14 @@ typedef struct {
 	size_t tokenCount;
 	char* tokenData;
 } Token;
+
+typedef struct {
+	size_t count;
+	Token array[TOKEN_CAP];
+} Tokens;
+
+char* loadFileContent(const char* filePath);
+int isTokenPresent(Tokens tokens, String_View svToken);
 
 char* loadFileContent(const char* filePath) {
 
@@ -58,43 +67,67 @@ char* loadFileContent(const char* filePath) {
 	return fileData;
 }
 
+int isTokenPresent(Tokens tokens, String_View svToken) {
+	for(size_t i = 0; i < tokens.count; i++) {
+		if(tokens.array[i].tokenData && ((strncmp(tokens.array[i].tokenData, svToken.data, svToken.count)) == 0))
+			return i;
+	}
+	return -1;
+}
+
 int main(int argc, char* argv[]) {
 
 	if (argc == 1) {
 		printf("%s\n", "Plese provide path to input file");
 		return 1;
 	}	
-	
 	const char* filePath = argv[1];
 
 	char* fileData = loadFileContent(filePath);
 	
+	Tokens tokens = { .count = 0, .array = {0} };
+	
+	//Open file STREAM to output file
 	const char* outFilePath = "output.txt";
 	FILE* outfptr;
 	if((outfptr = fopen(outFilePath, "w")) == NULL) {
 		printf("ERROR: %d %s - %s\n", errno, outFilePath, strerror(errno));
-		exit(EXIT_FAILURE);
+		return 1;
 	}
 
 	String_View fileContent = { .count = strlen(fileData), .data = fileData };
-	int idCount = 0;
+	int tokenID = 0;
 	while(fileContent.count > 0) {
+
 		String_View svToken = sv_chop_by_delim(&fileContent, ' ');
-		Token token = {
-			.tokenId = idCount,
-			.tokenFreq = 0,
-			.tokenCount = svToken.count,
-			.tokenData = malloc(svToken.count)
-		};
-		memcpy(token.tokenData, svToken.data, svToken.count);
-		if((fprintf(outfptr, "TOKEN: %s\n\tTOKEN ID: %d - TOKEN FREQ: %d - TOKEN COUNT: %zu\n",
-				token.tokenData, token.tokenId, token.tokenFreq, token.tokenCount)) == -1) {
-			printf("ERROR: %d %s - %s\n", errno, filePath, strerror(errno));
-			exit(EXIT_FAILURE);
+
+		//Either increment freq if token already in token array
+		//or insert token at the end of the token array
+		int i = isTokenPresent(tokens, svToken);
+		if(i != -1){
+			tokens.array[i].tokenFreq++;
+			} else {
+			Token token = {
+				.tokenId = tokenID,
+				.tokenFreq = 1,
+				.tokenCount = svToken.count,
+				.tokenData = malloc(svToken.count)
+				};
+			memcpy(token.tokenData, svToken.data, svToken.count);
+			tokens.array[tokens.count++] = token;
+			tokenID++;
+			}
 		}
-		idCount++;
-	}
+		free(fileData);
+
+		//Generate output file
+		for(size_t i = 0; i < tokens.count; i++) {
+			fprintf(outfptr, "TOKEN: '%s'\n\tID: %d FREQ: %d COUNT: %zu\n", tokens.array[i].tokenData, 
+					tokens.array[i].tokenId, tokens.array[i].tokenFreq, 
+					tokens.array[i].tokenCount);
+		}
+
 	fclose(outfptr);
-	free(fileData);
 	return 0;
 }
+
