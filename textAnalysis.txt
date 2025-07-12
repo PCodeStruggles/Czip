@@ -1,0 +1,23 @@
+[1][sono]
+  Freq: 4 - Len: 4
+[3][e]
+  Freq: 3 - Len: 1
+[4][un]
+  Freq: 2 - Len: 2
+[0][Ciao]
+  Freq: 1 - Len: 4
+[2][Paolo]
+  Freq: 1 - Len: 5
+[5][ragazzo]
+  Freq: 1 - Len: 7
+[6][di]
+  Freq: 1 - Len: 2
+[7][Torino]
+  Freq: 1 - Len: 6
+[8][abbastanza]
+  Freq: 1 - Len: 10
+[9][alto]
+  Freq: 1 - Len: 4
+[10][ragazzo
+]
+  Freq: 1 - Len: 8

@@ -23,6 +23,7 @@ typedef struct {
 
 char* loadFileContent(const char* filePath);
 int isTokenPresent(Tokens tokens, String_View svToken);
+void tokensTableDumpToFile(Tokens token, const char* outputFilePath);
 
 char* loadFileContent(const char* filePath) {
 
@@ -76,6 +77,22 @@ int isTokenPresent(Tokens tokens, String_View svToken) {
 	return -1;
 }
 
+void tokensTableDumpToFile(Tokens tokens, const char* outputFilePath) {
+	FILE* tokenTable;
+	if((tokenTable = fopen(outputFilePath, "w")) == NULL) {
+		printf("ERROR: %d %s - %s\n", errno, outputFilePath, strerror(errno));
+		exit(EXIT_FAILURE);
+		}
+
+	for(size_t i = 0; i < tokens.count; i++) {
+		fprintf(tokenTable, "[%d][%s]\n  Freq: %d - Len: %zu\n", tokens.array[i].tokenId,
+				tokens.array[i].tokenData, tokens.array[i].tokenFreq, tokens.array[i].tokenCount);
+		}
+
+	if((fclose(tokenTable)) != 0) exit(EXIT_FAILURE); 
+	printf("Text analysis: %s\n", outputFilePath); 
+	}
+
 int main(int argc, char* argv[]) {
 
 	if (argc == 1) {
@@ -88,11 +105,11 @@ int main(int argc, char* argv[]) {
 	
 	Tokens tokens = { .count = 0, .array = {0} };
 	
-	//Open file STREAM to output file
-	const char* outFilePath = "output.txt";
-	FILE* outfptr;
-	if((outfptr = fopen(outFilePath, "w")) == NULL) {
-		printf("ERROR: %d %s - %s\n", errno, outFilePath, strerror(errno));
+	//Open file STREAM to text translation output file
+	const char* textTranslationFilePath = "translation.txt";
+	FILE* textTranslation;
+	if((textTranslation = fopen(textTranslationFilePath, "w")) == NULL) {
+		printf("ERROR: %d %s - %s\n", errno, textTranslationFilePath, strerror(errno));
 		return 1;
 	}
 
@@ -107,6 +124,7 @@ int main(int argc, char* argv[]) {
 		int i = isTokenPresent(tokens, svToken);
 		if(i != -1){
 			tokens.array[i].tokenFreq++;
+			fprintf(textTranslation, "%d ", tokens.array[i].tokenId);
 			} else {
 			assert(tokens.count < TOKEN_CAP && "Tokens array overflow");
 			Token token = {
@@ -117,6 +135,7 @@ int main(int argc, char* argv[]) {
 				};
 			memcpy(token.tokenData, svToken.data, svToken.count);
 			tokens.array[tokens.count++] = token;
+			fprintf(textTranslation, "%d ", token.tokenId);
 			tokenID++;
 			}
 		}
@@ -135,16 +154,10 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	//Generate output file
-	for(size_t i = 0; i < tokens.count; i++) {
-		fprintf(outfptr, "TOKEN: '%s'\n\tID: %d FREQ: %d COUNT: %zu\n", 
-				tokens.array[i].tokenData, 
-				tokens.array[i].tokenId, 
-				tokens.array[i].tokenFreq, 
-				tokens.array[i].tokenCount);
-	}
-
-	fclose(outfptr);
+	//Generate text analysis output file
+	tokensTableDumpToFile(tokens, "textAnalysis.txt");
+	printf("Text translation: %s\n", textTranslationFilePath); 
+	if((fclose(textTranslation)) != 0) return 1;
 	return 0;
 }
 

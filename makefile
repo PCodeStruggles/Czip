@@ -6,4 +6,5 @@ main: main.c
 
 clean:
 	rm main
-	rm output.txt
+	rm textAnalysis.txt
+	rm translation.txt 
