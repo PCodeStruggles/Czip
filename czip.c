@@ -1,32 +1,5 @@
-#include <stddef.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <errno.h>
-#include <assert.h>
-
 #define SV_IMPLEMENTATION
-#include "./sv.h"
-#define TOKEN_CAP 1024
-
-typedef struct {
-	int tokenId;
-	int tokenFreq;
-	size_t tokenCount;
-	char* tokenData;
-} Token;
-
-typedef struct {
-	size_t count;
-	Token array[TOKEN_CAP];
-} Tokens;
-
-char* loadFileContent(const char* filePath);
-Tokens generateTokensArray(char* fileData);
-void generateTokensIDs(Tokens* tokens);
-int isTokenPresent(Tokens tokens, String_View svToken);
-void generateTranslation(char* fileData, Tokens tokens, const char* outputFilePath);
-void tokensArrayDumpToFile(Tokens tokens, const char* outputFilePath);
+#include "czip.h"
 
 char* loadFileContent(const char* filePath) {
 
@@ -51,8 +24,8 @@ char* loadFileContent(const char* filePath) {
 	fseek(fptr, 0, SEEK_SET);
 
 	//Allocate the file content buffer on the heap
-	static char* fileData;
-	if((fileData = malloc(fileSize)) == NULL) {
+	char* fileData;
+	if((fileData = (char*)malloc(fileSize)) == NULL) {
 		printf("ERROR: %d - %s\n", errno, strerror(errno));
 		exit(EXIT_FAILURE);
 	}
@@ -109,7 +82,7 @@ Tokens generateTokensArray(char* fileData) {
 				.tokenId = 0,
 				.tokenFreq = 1,
 				.tokenCount = svToken.count,
-				.tokenData = malloc(svToken.count)
+				.tokenData = (char*)malloc(svToken.count)
 				};
 			memcpy(token.tokenData, svToken.data, svToken.count);
 			tokens.array[tokens.count++] = token;
@@ -159,30 +132,11 @@ void tokensArrayDumpToFile(Tokens tokens, const char* outputFilePath) {
 		}
 
 	for(size_t i = 0; i < tokens.count; i++) {
-		fprintf(tokenTable, "[%d][%s][Freq: %d]\n", tokens.array[i].tokenId,
-				tokens.array[i].tokenData, tokens.array[i].tokenFreq);
+		fprintf(tokenTable, "%d|%s\n", tokens.array[i].tokenId,
+				tokens.array[i].tokenData);
 		}
 
 	if((fclose(tokenTable)) != 0) exit(EXIT_FAILURE); 
 	printf("Text analysis: %s\n", outputFilePath); 
 	}
-
-int main(int argc, char* argv[]) {
-
-	if (argc == 1) {
-		printf("%s\n", "Plese provide path to input file");
-		return 1;
-	}	
-
-	const char* filePath = argv[1];
-
-	char* fileData = loadFileContent(filePath);
-	
-	Tokens tokens = generateTokensArray(fileData);
-	
-	tokensArrayDumpToFile(tokens, "textAnalysis.txt");
-	generateTranslation(fileData, tokens, "translation.txt");
-	free(fileData);
-	return 0;
-}
 
