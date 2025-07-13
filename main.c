@@ -22,8 +22,11 @@ typedef struct {
 } Tokens;
 
 char* loadFileContent(const char* filePath);
+Tokens generateTokensArray(char* fileData);
+void generateTokensIDs(Tokens* tokens);
 int isTokenPresent(Tokens tokens, String_View svToken);
-void tokensTableDumpToFile(Tokens token, const char* outputFilePath);
+void generateTranslation(char* fileData, Tokens tokens, const char* outputFilePath);
+void tokensArrayDumpToFile(Tokens tokens, const char* outputFilePath);
 
 char* loadFileContent(const char* filePath) {
 
@@ -69,6 +72,7 @@ char* loadFileContent(const char* filePath) {
 	return fileData;
 }
 
+//O(n)
 int isTokenPresent(Tokens tokens, String_View svToken) {
 	for(size_t i = 0; i < tokens.count; i++) {
 		if(tokens.array[i].tokenData && ((strncmp(tokens.array[i].tokenData, svToken.data, svToken.count)) == 0))
@@ -77,44 +81,19 @@ int isTokenPresent(Tokens tokens, String_View svToken) {
 	return -1;
 }
 
-void tokensTableDumpToFile(Tokens tokens, const char* outputFilePath) {
-	FILE* tokenTable;
-	if((tokenTable = fopen(outputFilePath, "w")) == NULL) {
-		printf("ERROR: %d %s - %s\n", errno, outputFilePath, strerror(errno));
-		exit(EXIT_FAILURE);
-		}
-
-	for(size_t i = 0; i < tokens.count; i++) {
-		fprintf(tokenTable, "[%d][%s]\n  Freq: %d - Len: %zu\n", tokens.array[i].tokenId,
-				tokens.array[i].tokenData, tokens.array[i].tokenFreq, tokens.array[i].tokenCount);
-		}
-
-	if((fclose(tokenTable)) != 0) exit(EXIT_FAILURE); 
-	printf("Text analysis: %s\n", outputFilePath); 
+//O(n)
+void generateTokensIDs(Tokens* tokens) {
+	for (size_t i = 0; i < tokens->count; i++) {
+		tokens->array[i].tokenId = i;
 	}
+}
 
-int main(int argc, char* argv[]) {
-
-	if (argc == 1) {
-		printf("%s\n", "Plese provide path to input file");
-		return 1;
-	}	
-	const char* filePath = argv[1];
-
-	char* fileData = loadFileContent(filePath);
-	
-	Tokens tokens = { .count = 0, .array = {0} };
-	
-	//Open file STREAM to text translation output file
-	const char* textTranslationFilePath = "translation.txt";
-	FILE* textTranslation;
-	if((textTranslation = fopen(textTranslationFilePath, "w")) == NULL) {
-		printf("ERROR: %d %s - %s\n", errno, textTranslationFilePath, strerror(errno));
-		return 1;
-	}
+//O(n^3)??
+Tokens generateTokensArray(char* fileData) {
 
 	String_View fileContent = { .count = strlen(fileData), .data = fileData };
-	int tokenID = 0;
+	Tokens tokens = { .count = 0, .array = {0} };
+
 	while(fileContent.count > 0) {
 
 		String_View svToken = sv_chop_by_delim(&fileContent, ' ');
@@ -124,23 +103,18 @@ int main(int argc, char* argv[]) {
 		int i = isTokenPresent(tokens, svToken);
 		if(i != -1){
 			tokens.array[i].tokenFreq++;
-			fprintf(textTranslation, "%d ", tokens.array[i].tokenId);
 			} else {
 			assert(tokens.count < TOKEN_CAP && "Tokens array overflow");
 			Token token = {
-				.tokenId = tokenID,
+				.tokenId = 0,
 				.tokenFreq = 1,
 				.tokenCount = svToken.count,
 				.tokenData = malloc(svToken.count)
 				};
 			memcpy(token.tokenData, svToken.data, svToken.count);
 			tokens.array[tokens.count++] = token;
-			fprintf(textTranslation, "%d ", token.tokenId);
-			tokenID++;
 			}
 		}
-
-	free(fileData);
 
 	//Tokens sorting in Freq decreasing order
 	//Bubble Sort for now
@@ -153,11 +127,62 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
+	generateTokensIDs(&tokens);
+	return tokens;
+}
 
-	//Generate text analysis output file
-	tokensTableDumpToFile(tokens, "textAnalysis.txt");
-	printf("Text translation: %s\n", textTranslationFilePath); 
-	if((fclose(textTranslation)) != 0) return 1;
+void generateTranslation(char* fileData, Tokens tokens, const char* outputFilePath) {
+
+	String_View fileContent = { .count = strlen(fileData), .data = fileData };
+
+	FILE* textTranslation;
+	if((textTranslation = fopen(outputFilePath, "w")) == NULL) {
+		printf("ERROR: %d %s - %s\n", errno, outputFilePath, strerror(errno));
+		exit(EXIT_FAILURE);
+	}
+	
+	while(fileContent.count > 0) {
+		String_View svToken = sv_chop_by_delim(&fileContent, ' ');
+		int i = isTokenPresent(tokens, svToken);
+		fprintf(textTranslation, "%d ", tokens.array[i].tokenId);
+	}
+	if((fclose(textTranslation)) != 0) exit(EXIT_FAILURE); 
+	printf("Text translation: %s\n", outputFilePath); 
+}
+
+//O(n)
+void tokensArrayDumpToFile(Tokens tokens, const char* outputFilePath) {
+	FILE* tokenTable;
+	if((tokenTable = fopen(outputFilePath, "w")) == NULL) {
+		printf("ERROR: %d %s - %s\n", errno, outputFilePath, strerror(errno));
+		exit(EXIT_FAILURE);
+		}
+
+	for(size_t i = 0; i < tokens.count; i++) {
+		fprintf(tokenTable, "[%d][%s][Freq: %d]\n", tokens.array[i].tokenId,
+				tokens.array[i].tokenData, tokens.array[i].tokenFreq);
+		}
+
+	if((fclose(tokenTable)) != 0) exit(EXIT_FAILURE); 
+	printf("Text analysis: %s\n", outputFilePath); 
+	}
+
+int main(int argc, char* argv[]) {
+
+	if (argc == 1) {
+		printf("%s\n", "Plese provide path to input file");
+		return 1;
+	}	
+
+	const char* filePath = argv[1];
+
+	char* fileData = loadFileContent(filePath);
+	
+	Tokens tokens = generateTokensArray(fileData);
+	
+	tokensArrayDumpToFile(tokens, "textAnalysis.txt");
+	generateTranslation(fileData, tokens, "translation.txt");
+	free(fileData);
 	return 0;
 }
 

@@ -8,3 +8,7 @@ clean:
 	rm main
 	rm textAnalysis.txt
 	rm translation.txt 
+
+make clout:
+	rm textAnalysis.txt
+	rm translation.txt 
