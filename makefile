@@ -1,12 +1,17 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
 
-encoder: ./src/encoder.c ./src/czip.c ./src/czip.h
-	$(CC) $(CFLAGS) -c ./src/czip.c -o ./bin/czip.o
-	$(CC) $(CFLAGS) ./src/encoder.c ./bin/czip.o -o ./bin/encoder
-	mkdir output
+all: encoder decoder
 
-decoder: ./src/decoder.c ./src/czip.c ./src/czip.h
+./bin/czip.o: ./src/czip.c ./src/czip.h
+	mkdir -p ./bin
+	$(CC) $(CFLAGS) -c ./src/czip.c -o ./bin/czip.o
+
+encoder: ./bin/czip.o ./src/encoder.c ./src/czip.h
+	$(CC) $(CFLAGS) ./src/encoder.c ./bin/czip.o -o ./bin/encoder
+	mkdir -p output
+
+decoder: ./bin/czip.o ./src/decoder.c ./src/czip.h
 	$(CC) $(CFLAGS) ./src/decoder.c ./bin/czip.o -o ./bin/decoder
 clean:
 	rm ./bin/encoder
