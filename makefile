@@ -1,19 +1,18 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -pedantic
 
-encoder: encoder.c czip.c czip.h
-	$(CC) $(CFLAGS) -c czip.c -o czip.o
-	$(CC) $(CFLAGS) encoder.c czip.o -o encoder
+encoder: ./src/encoder.c ./src/czip.c ./src/czip.h
+	$(CC) $(CFLAGS) -c ./src/czip.c -o ./bin/czip.o
+	$(CC) $(CFLAGS) ./src/encoder.c ./bin/czip.o -o ./bin/encoder
+	mkdir output
 
-decoder: decoder.c czip.c czip.h
-	$(CC) $(CFLAGS) decoder.c czip.o -o decoder
+decoder: ./src/decoder.c ./src/czip.c ./src/czip.h
+	$(CC) $(CFLAGS) ./src/decoder.c ./bin/czip.o -o ./bin/decoder
 clean:
-	rm encoder
-	rm decoder
-	rm czip.o
-	rm textAnalysis.txt
-	rm translation.txt 
+	rm ./bin/encoder
+	rm ./bin/decoder
+	rm ./bin/czip.o
+	rm -r output
 
 make clout:
-	rm textAnalysis.txt
-	rm translation.txt 
+	rm -r output

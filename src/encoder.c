@@ -11,7 +11,7 @@ int main(int argc, char* argv[]) {
 
 	char* fileData = loadFileContent(filePath);
 	
-	Tokens tokens = generateTokensArray(fileData);
+	encoderTokens tokens = generateTokensArray(fileData);
 	
 	tokensArrayDumpToFile(tokens, "./output/textAnalysis.txt");
 	generateTranslation(fileData, tokens, "./output/translation.txt");

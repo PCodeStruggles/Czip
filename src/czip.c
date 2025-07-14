@@ -46,7 +46,7 @@ char* loadFileContent(const char* filePath) {
 }
 
 //O(n)
-int isTokenPresent(Tokens tokens, String_View svToken) {
+int isTokenPresent(encoderTokens tokens, String_View svToken) {
 	for(size_t i = 0; i < tokens.count; i++) {
 		if(tokens.array[i].tokenData && ((strncmp(tokens.array[i].tokenData, svToken.data, svToken.count)) == 0))
 			return i;
@@ -55,17 +55,17 @@ int isTokenPresent(Tokens tokens, String_View svToken) {
 }
 
 //O(n)
-void generateTokensIDs(Tokens* tokens) {
+void generateTokensIDs(encoderTokens* tokens) {
 	for (size_t i = 0; i < tokens->count; i++) {
 		tokens->array[i].tokenId = i;
 	}
 }
 
 //O(n^3)??
-Tokens generateTokensArray(char* fileData) {
+encoderTokens generateTokensArray(char* fileData) {
 
 	String_View fileContent = { .count = strlen(fileData), .data = fileData };
-	Tokens tokens = { .count = 0, .array = {0} };
+	encoderTokens tokens = { .count = 0, .array = {0} };
 
 	while(fileContent.count > 0) {
 
@@ -78,7 +78,7 @@ Tokens generateTokensArray(char* fileData) {
 			tokens.array[i].tokenFreq++;
 			} else {
 			assert(tokens.count < TOKEN_CAP && "Tokens array overflow");
-			Token token = {
+			encoderToken token = {
 				.tokenId = 0,
 				.tokenFreq = 1,
 				.tokenCount = svToken.count,
@@ -94,7 +94,7 @@ Tokens generateTokensArray(char* fileData) {
 	for(size_t i = 0; i < tokens.count; i++) {
 		for(size_t j = 0; j < tokens.count -1 -i; j++) {
 			if(tokens.array[j].tokenFreq < tokens.array[j + 1].tokenFreq) {
-				const Token tmp = tokens.array[j];
+				const encoderToken tmp = tokens.array[j];
 				tokens.array[j] = tokens.array[j + 1];
 				tokens.array[j + 1] = tmp;
 			}
@@ -104,7 +104,7 @@ Tokens generateTokensArray(char* fileData) {
 	return tokens;
 }
 
-void generateTranslation(char* fileData, Tokens tokens, const char* outputFilePath) {
+void generateTranslation(char* fileData, encoderTokens tokens, const char* outputFilePath) {
 
 	String_View fileContent = { .count = strlen(fileData), .data = fileData };
 
@@ -124,7 +124,7 @@ void generateTranslation(char* fileData, Tokens tokens, const char* outputFilePa
 }
 
 //O(n)
-void tokensArrayDumpToFile(Tokens tokens, const char* outputFilePath) {
+void tokensArrayDumpToFile(encoderTokens tokens, const char* outputFilePath) {
 	FILE* tokenTable;
 	if((tokenTable = fopen(outputFilePath, "w")) == NULL) {
 		printf("ERROR: %d %s - %s\n", errno, outputFilePath, strerror(errno));

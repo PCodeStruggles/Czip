@@ -48,7 +48,11 @@ int main(int argc, char* argv[]) {
 	free(translationTable);
 
 	const char* decoderOutputFile = "./output/decodedText.txt";
-	FILE* decoderOutput = fopen(decoderOutputFile, "w");
+	FILE* decoderOutput;
+	if ((decoderOutput = fopen(decoderOutputFile, "w")) == NULL) {
+		printf("ERROR: %d %s - %s\n", errno, decoderOutputFile, strerror(errno));
+		return 1;
+	}
 	char* translationToDecode = loadFileContent(translationToDecodeFile);
 
 	String_View svTranslationToDecode = { .count = strlen(translationToDecode), .data = translationToDecode };
